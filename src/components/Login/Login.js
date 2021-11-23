@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 import FormHelperText from '@mui/material/FormHelperText';
 import Grid from '@mui/material/Grid';
@@ -7,10 +7,13 @@ import Input from '@mui/material/Input';
 import InputLabel from '@mui/material/InputLabel';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import useAuth from '../../common/useAuth';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup'
+import useAuth from '../../common/useAuth';
+import AuthService from "../../services/auth.service";
 
 const validationSchema = yup.object({
     username: yup.string().required('Username is required'),
@@ -21,6 +24,9 @@ export default function Login(){
     const navigate = useNavigate();
     const {state} = useLocation();
     const { login } = useAuth();
+    const [message, setMessage] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [open, setOpen] = useState(false);
     const {
         register,
         control,
@@ -29,49 +35,59 @@ export default function Login(){
     } = useForm({
         resolver: yupResolver(validationSchema)
     });
-    
 
-    // let state = location.state;
-    // let from = state ? state.from.pathname : "/";
+    const handleClose = (event, reason) => {
+        if (reason === 'clickaway') {
+          return;
+        }
     
-    // const [username, setUsername] = React.useState(null);
-    // const [password, setPassword] = React.useState(null);
-
-    // const handleSubmit = (event) => {
-    //     event.preventDefault()
-    //     let formData = new FormData(event.currentTarget);
-    //     let username = formData.get("username");
-    //     let password = formData.get("password");
-    //     console.log('Login ', username);
-    //     // auth.signin(username, password, () => {
-    //     //     navigate(from, { replace: true });
-    //     // });
-    //     // setUsername(event.target.value);
-    //     login().then(()=>{
-    //         navigate(from, { replace: true });
-    //         // if( state.path ) {
-    //         //     navigate(state?.path || '/main');
-    //         // }else {
-    //         //     navigate('/main');
-    //         // }
-            
-    //     });
-    // };
+        setOpen(false);
+    };
 
     const onLogin = (data) =>{
         console.log(JSON.stringify(data, null, 2));
-        login(data.username, data.password).then(()=>{
-            navigate(state?.path || '/main');
-        });
+        // login(data.username, data.password).then(()=>{
+        //     navigate(state?.path || '/main');
+        // });
+
+        setMessage("");
+        setLoading(true);
+
+        AuthService.login(data.username, data.password).then(
+            ()=>{
+                navigate(state?.path || '/main');
+            },
+            (error)=>{
+                const resMessage =
+                    (error.response &&
+                    error.response.data &&
+                    error.response.data.message) ||
+                    error.message ||
+                    error.toString();
+
+                setLoading(false);
+                setMessage(resMessage);
+                setOpen(true);
+                console.log('MESSAGE ', resMessage)
+            }
+        )
     }
 
     return (
         <Grid container spacing={3}>
+            <Snackbar 
+                open={open} 
+                autoHideDuration={6000} 
+                onClose={handleClose} 
+                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
+                <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
+                 {message}
+                </Alert>
+            </Snackbar>
             <Grid item xs>
                 
             </Grid>
             <Grid item xs={6}>
-            
             <Box
                 sx={{
                     display: 'flex',    
