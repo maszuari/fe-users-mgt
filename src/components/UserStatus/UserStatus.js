@@ -16,11 +16,10 @@ export default function UserStatus() {
   }
 
   const handleLogout = () => {
-    console.log('LOGOUT');
     dispatch(userActions.logout());
     navigate('/')
   }
-  console.log('UserStatus ', user.username);
+ 
   return (
     <Box>
       Welcome {user.user.username}!{" "}
