@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useDispatch , useSelector } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router';
 import FormHelperText from '@mui/material/FormHelperText';
 import Grid from '@mui/material/Grid';
@@ -12,8 +13,9 @@ import Alert from '@mui/material/Alert';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup'
-import useAuth from '../../common/useAuth';
-import AuthService from "../../services/auth.service";
+// import useAuth from '../../common/useAuth';
+// import AuthService from "../../services/auth.service";
+import { userActions } from '../../actions/user'; 
 
 const validationSchema = yup.object({
     username: yup.string().required('Username is required'),
@@ -21,10 +23,14 @@ const validationSchema = yup.object({
   }).required();
 
 export default function Login(){
+
+    const alert = useSelector(state => state.alert);
+    const user = useSelector(state => state.user);
+
+    const dispatch = useDispatch();
     const navigate = useNavigate();
-    const {state} = useLocation();
-    const { login } = useAuth();
-    const [message, setMessage] = useState("");
+    const location = useLocation();
+ 
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
     const {
@@ -35,6 +41,16 @@ export default function Login(){
     } = useForm({
         resolver: yupResolver(validationSchema)
     });
+
+    useEffect(() => { 
+        dispatch(userActions.logout()); 
+    }, []);
+
+    useEffect(() => {
+        if( user.isLoggedIn ) {
+            navigate('/main');
+        }
+    },[user.isLoggedIn])
 
     const handleClose = (event, reason) => {
         if (reason === 'clickaway') {
@@ -50,29 +66,21 @@ export default function Login(){
         //     navigate(state?.path || '/main');
         // });
 
-        setMessage("");
         setLoading(true);
+        
+        dispatch(userActions.login(data.username, data.password));
 
-        AuthService.login(data.username, data.password).then(
-            ()=>{
-                navigate(state?.path || '/main');
-            },
-            (error)=>{
-                const resMessage =
-                    (error.response &&
-                    error.response.data &&
-                    error.response.data.message) ||
-                    error.message ||
-                    error.toString();
+        if(alert.status === 'error') {
+            setOpen(true);
+        }else{
+            setOpen(false);
+        }
 
-                setLoading(false);
-                setMessage(resMessage);
-                setOpen(true);
-                console.log('MESSAGE ', resMessage)
-            }
-        )
+       
     }
 
+    console.log('FROM -> ', location.state);
+    console.log('USER -> ', user);
     return (
         <Grid container spacing={3}>
             <Snackbar 
@@ -81,7 +89,7 @@ export default function Login(){
                 onClose={handleClose} 
                 anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
                 <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
-                 {message}
+                 {alert.message}
                 </Alert>
             </Snackbar>
             <Grid item xs>

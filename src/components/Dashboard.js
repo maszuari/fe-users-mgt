@@ -17,7 +17,7 @@ export default function Dashboard() {
 
     return (
         <Box>
-           <Typography component={'span'}>Dashboard</Typography>
+           {/* <Typography component={'span'}>Dashboard</Typography> */}
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                 <Tabs value={value} onChange={handleChange} aria-label="dashboard-tabs">
                     <Tab label="Main" {...a11yProps(0)} />

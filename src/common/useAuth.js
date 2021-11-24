@@ -1,6 +1,8 @@
 // Hook (useAuth.js)
 import React, { useState, useEffect, useContext, createContext } from "react";
 import {ApiAuth} from '../api/ApiAuth';
+// TODO
+// import AuthService from "../../services/auth.service";
 
 const AuthContext = createContext();
 
@@ -28,7 +30,7 @@ function useAuth(){
                 setUser(null);
                 res();
             });
-        }
+        },
     };
 }
 

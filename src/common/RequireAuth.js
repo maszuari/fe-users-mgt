@@ -1,11 +1,13 @@
-import useAuth from "./useAuth";
-import { useLocation, Navigate }  from "react-router-dom";
+import React from 'react';
+import { useSelector } from 'react-redux';
+import { useLocation, Navigate }  from 'react-router-dom';
 
 export default function RequireAuth({ children }) {
-    let {user} = useAuth();
-    let location = useLocation();
+
+    const user = useSelector(state=>state.user)
+    const location = useLocation();
   
-    if (!user) {
+    if (!user.isLoggedIn) {
       // Redirect them to the /login page, but save the current location they were
       // trying to go to when they were redirected. This allows us to send them
       // along to that page after they login, which is a nicer user experience
